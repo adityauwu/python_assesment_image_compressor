@@ -1,0 +1,1 @@
+# python_assesment_image_compressor
