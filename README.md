@@ -29,10 +29,10 @@ Parameters:
 <request_id>: Unique identifier for the request.
 Description: Retrieves the current processing status and CSV file location for a given request ID.
 ![image](https://github.com/adityauwu/python_assesment_image_compressor/assets/64534738/2c94dd78-77c1-4919-aa61-64732fa2090d)
-
+![image](https://github.com/adityauwu/python_assesment_image_compressor/assets/64534738/1e4dc496-828c-47dc-93bc-d79491554ce8)
 ![image](https://github.com/adityauwu/python_assesment_image_compressor/assets/64534738/79859241-7ada-408e-811e-ae4b1e48cea1)
 
-![image](https://github.com/adityauwu/python_assesment_image_compressor/assets/64534738/1e4dc496-828c-47dc-93bc-d79491554ce8)
+
 
 
 **Installation and Setup**
