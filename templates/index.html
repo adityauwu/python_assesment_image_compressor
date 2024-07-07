@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Processor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f2f2f2;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        form {
+            margin: 20px auto;
+            width: 80%;
+            max-width: 600px;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        input[type=file] {
+            display: block;
+            margin-bottom: 10px;
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        button[type=submit], button[type=button] {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button[type=submit]:hover, button[type=button]:hover {
+            background-color: #0056b3;
+        }
+        #status {
+            margin-top: 20px;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            color: #333;
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+        input[type=text] {
+            width: calc(100% - 100px);
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        p {
+            font-size: 14px;
+            margin-top: 10px;
+        }
+        a {
+            color: #007bff;
+            text-decoration: none;
+            font-size: 14px;
+            margin-top: 10px;
+            display: inline-block;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <h1>Upload CSV for Image Processing</h1>
+    <form id="uploadForm">
+        <input type="file" id="csvFile" accept=".csv" required>
+        <button type="submit">Upload CSV</button>
+    </form>
+    <div id="status">
+        <h2>Check Status</h2>
+        <input type="text" id="requestId" placeholder="Enter Request ID" required>
+        <button type="button" onclick="checkStatus()">Check Status</button>
+        <p id="statusMessage"></p>
+        <a id="downloadLink" style="display: none;" onclick="downloadFile()" download>Download CSV</a>
+    </div>
+
+    <script>
+        const downloadFolder = "/home/aditya/Desktop/sypn/uploads";
+
+        document.getElementById('uploadForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const fileInput = document.getElementById('csvFile');
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+
+            fetch('/upload_csv', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.request_id) {
+                    alert('CSV uploaded successfully. Your request ID is: ' + data.request_id);
+                    document.getElementById('requestId').value = data.request_id;
+                } else {
+                    alert('Error uploading CSV: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error uploading CSV.');
+            });
+        });
+
+        function checkStatus() {
+            const requestId = document.getElementById('requestId').value;
+            if (!requestId) {
+                alert('Please enter a Request ID.');
+                return;
+            }
+
+            fetch('/status/' + requestId)
+            .then(response => response.json())
+            .then(data => {
+                const statusMessage = document.getElementById('statusMessage');
+                if (data.status && data.csv_location) {
+                    statusMessage.innerText = 'Status: ' + data.status + '\nCSV Location: ' + data.csv_location;
+                    if (data.status === 'completed') {
+                        const downloadLink = document.getElementById('downloadLink');
+                        downloadLink.setAttribute('href', downloadFolder + '/' + data.csv_location);
+                        downloadLink.style.display = 'inline-block';
+                    }
+                } else if (data.status) {
+                    statusMessage.innerText = 'Status: ' + data.status;
+                } else {
+                    statusMessage.innerText = 'Request ID not found.';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('statusMessage').innerText = 'Error checking status.';
+            });
+        }
+
+        function downloadFile() {
+            // Fetch the file directly
+            const requestId = document.getElementById('requestId').value;
+            if (!requestId) {
+                alert('Please enter a Request ID.');
+                return;
+            }
+
+            fetch('/download/' + requestId)
+            .then(response => response.blob())
+            .then(blob => {
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = 'downloaded.csv'; // Set desired file name here
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error downloading file.');
+            });
+        }
+    </script>
+</body>
+</html>

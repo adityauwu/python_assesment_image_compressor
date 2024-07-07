@@ -1,0 +1,9 @@
+
+
+pillow
+Flask
+Flask-SQLAlchemy
+Celery
+redis
+Pillow
+requests
